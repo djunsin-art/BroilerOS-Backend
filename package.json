@@ -1,16 +1,19 @@
 {
   "name": "broileros-backend",
   "version": "2.1.0",
+  "description": "BroilerOS Backend",
   "main": "index.js",
-  "scripts": { "start": "node index.js" },
+  "scripts": {
+    "start": "node index.js"
+  },
   "dependencies": {
-    "bcrypt": "^5.1.1",
+    "express": "^4.18.2",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "express-rate-limit": "^6.10.0",
+    "pg": "^8.11.3",
     "helmet": "^7.1.0",
+    "bcrypt": "^5.1.1",
     "jsonwebtoken": "^9.0.2",
-    "pg": "^8.11.3"
+    "express-rate-limit": "^6.10.0"
   }
 }
