@@ -107,3 +107,43 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`🔗 Health check: /api/health`);
     console.log(`🔗 Test DB: /api/test-db`);
 });
+// ============================================================
+// DATABASE CONNECTION (TANPA CRASH)
+// ============================================================
+console.log('🔌 Mencoba koneksi ke database...');
+
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+    connectionTimeoutMillis: 10000,
+    idleTimeoutMillis: 30000,
+    max: 10,
+});
+
+// Test koneksi TANPA menghentikan server
+pool.connect((err, client, release) => {
+    if (err) {
+        console.error('❌ Database connection failed:', err.message);
+        console.error('📡 DATABASE_URL is', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
+        console.log('⚠️ Server tetap berjalan, tetapi endpoint database akan error.');
+        // JANGAN panggil process.exit(1) - biarkan server tetap hidup
+    } else {
+        console.log('✅ Database connected successfully.');
+        release();
+    }
+});
+
+// Event listener untuk error pool (jangan crash)
+pool.on('error', (err) => {
+    console.error('❌ Unexpected database error:', err.message);
+    // JANGAN throw err - cukup log
+});
+
+// Route test TANPA database (untuk cek server hidup)
+app.get('/ping', (req, res) => {
+    res.json({ 
+        status: 'OK', 
+        message: 'Server is running!',
+        timestamp: new Date().toISOString()
+    });
+});
