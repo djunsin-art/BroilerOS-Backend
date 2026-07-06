@@ -1,7 +1,6 @@
 {
   "name": "broileros-backend",
   "version": "2.1.0",
-  "license": "MIT",
   "description": "BroilerOS Light Backend",
   "main": "index.js",
   "scripts": { "start": "node index.js" },
