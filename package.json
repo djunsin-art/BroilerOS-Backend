@@ -1,12 +1,9 @@
 {
   "name": "broileros-backend",
   "version": "2.1.0",
-  "description": "BroilerOS Backend - Peternakan Cerdas",
+  "description": "BroilerOS Backend",
   "main": "index.js",
-  "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js"
-  },
+  "scripts": { "start": "node index.js" },
   "dependencies": {
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
@@ -17,10 +14,5 @@
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.12.0"
   },
-  "devDependencies": {
-    "nodemon": "^3.1.0"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  }
+  "engines": { "node": ">=18.0.0" }
 }
