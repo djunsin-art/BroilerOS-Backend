@@ -49,7 +49,6 @@ if (!process.env.DATABASE_URL) {
     console.error('⚠️ Server tetap berjalan, tetapi endpoint database akan error.');
 }
 
-const { Pool } = require('pg');
 const dns = require('dns');
 
 // Set default lookup ke IPv4
