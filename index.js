@@ -7,6 +7,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { Pool } = require('pg');
+const dns = require('dns');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
@@ -48,8 +49,6 @@ if (!process.env.DATABASE_URL) {
     console.error('❌ DATABASE_URL tidak ditemukan di environment variables!');
     console.error('⚠️ Server tetap berjalan, tetapi endpoint database akan error.');
 }
-
-const dns = require('dns');
 
 // Set default lookup ke IPv4
 dns.setDefaultResultOrder('ipv4first');
