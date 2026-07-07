@@ -1,6 +1,15 @@
 // ============================================================
 // BROILEROS BACKEND v2.1 FINAL (Render Ready)
 // ============================================================
+
+
+// ============================================================
+// PAKSA IPv4 (SOLUSI UNTUK RENDER + SUPABASE)
+// ============================================================
+
+const dns = require('dns');
+dns.setDefaultResultOrder('ipv4first'); // <-- INI KUNCI NYA
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
