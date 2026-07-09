@@ -26,7 +26,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'broileros-super-secret-key';
 // SECURITY
 app.use(helmet());
 const allowedOrigins = [
-    'https://broileros-app.pages.dev',
+    'https://broileros.pages.dev
     'http://localhost:5173',
     'http://localhost:3000',
     'https://broileros.onrender.com'
