@@ -23,6 +23,70 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'broileros-super-secret-key';
 
+// ============================================================
+// MIDDLEWARE AUTH (Verifikasi JWT Token)
+// ============================================================
+async function auth(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).json({ error: 'No token provided' });
+    }
+    try {
+        const token = authHeader.split(' ')[1];
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const result = await pool.query(
+            'SELECT id, name, role, farm_id, barn_id, floor_id, is_super_admin FROM users WHERE id = $1 AND active = true',
+            [decoded.id]
+        );
+        if (result.rows.length === 0) {
+            return res.status(401).json({ error: 'User not found' });
+        }
+        req.user = result.rows[0];
+        req.isSuperAdmin = req.user.is_super_admin || false;
+        next();
+    } catch (e) {
+        res.status(401).json({ error: 'Invalid token' });
+    }
+}
+
+// ============================================================
+// GLOBAL STATS (Super Admin Only)
+// ============================================================
+app.get('/api/admin/global-stats', auth, async (req, res) => {
+    if (!req.isSuperAdmin) {
+        return res.status(403).json({ error: 'Akses khusus Super Admin' });
+    }
+
+    try {
+        const totalFarms = await pool.query('SELECT COUNT(*) FROM farms');
+        const totalBarns = await pool.query('SELECT COUNT(*) FROM barns');
+        const totalUsers = await pool.query('SELECT COUNT(*) FROM users');
+        const totalReports = await pool.query('SELECT COUNT(*) FROM telemetry_reports');
+        const avgRisk = await pool.query('SELECT AVG(risk_score) FROM telemetry_reports');
+        const topRisks = await pool.query(`
+            SELECT r.*, f.name as farm_name, u.name as user_name, b.name as barn_name, fl.name as floor_name
+            FROM telemetry_reports r 
+            JOIN farms f ON r.farm_id = f.id 
+            LEFT JOIN users u ON r.user_id = u.id 
+            LEFT JOIN barns b ON r.barn_id = b.id 
+            LEFT JOIN floors fl ON r.floor_id = fl.id
+            ORDER BY r.risk_score DESC LIMIT 10
+        `);
+
+        res.json({
+            totalFarms: parseInt(totalFarms.rows[0].count),
+            totalBarns: parseInt(totalBarns.rows[0].count),
+            totalUsers: parseInt(totalUsers.rows[0].count),
+            totalReports: parseInt(totalReports.rows[0].count),
+            avgRisk: parseFloat(avgRisk.rows[0].avg) || 0,
+            topRisks: topRisks.rows
+        });
+    } catch (err) {
+        console.error('Global stats error:', err);
+        res.status(500).json({ error: 'Gagal mengambil data global', detail: err.message });
+    }
+});
+
 // SECURITY
 app.use(helmet());
 const allowedOrigins = [
