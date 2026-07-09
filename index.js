@@ -26,10 +26,11 @@ const JWT_SECRET = process.env.JWT_SECRET || 'broileros-super-secret-key';
 // SECURITY
 app.use(helmet());
 const allowedOrigins = [
-    'https://broileros.pages.dev',
+    'https://broileros-app.pages.dev',
     'http://localhost:5173',
     'http://localhost:3000',
     'https://broileros.onrender.com'
+    'https://*.workers.dev', // <-- Tambahkan ini
 ];
 app.use(cors({
     origin: function (origin, callback) {
@@ -123,6 +124,12 @@ app.get('/api/users/public', async (req, res) => {
     res.json(result.rows);
 });
 
+// === GLOBAL STATS ===
+app.get('/api/admin/global-stats', auth, async (req, res) => {
+    if (!req.isSuperAdmin) return res.status(403).json({ error: 'Akses khusus Super Admin' });
+    // ... isi query ...
+});
+
 app.post('/api/auth/login', loginLimiter, async (req, res) => {
     const { userId, pin } = req.body;
     if (!userId || !pin) return res.status(400).json({ error: 'User ID dan PIN wajib' });
@@ -162,6 +169,44 @@ app.post('/api/admin/setup', async (req, res) => {
     
     const result = await pool.query('INSERT INTO users (name, pin_hash, role, farm_id, is_super_admin) VALUES ($1, $2, $3, $4, $5) RETURNING id', [name, hash, 'manager', farmId, true]);
     res.status(201).json({ message: 'Super Admin created!', id: result.rows[0].id });
+});
+
+// ============================================================
+// GLOBAL STATS (Super Admin Only)
+// ============================================================
+app.get('/api/admin/global-stats', auth, async (req, res) => {
+    if (!req.isSuperAdmin) {
+        return res.status(403).json({ error: 'Akses khusus Super Admin' });
+    }
+
+    try {
+        const totalFarms = await pool.query('SELECT COUNT(*) FROM farms');
+        const totalBarns = await pool.query('SELECT COUNT(*) FROM barns');
+        const totalUsers = await pool.query('SELECT COUNT(*) FROM users');
+        const totalReports = await pool.query('SELECT COUNT(*) FROM telemetry_reports');
+        const avgRisk = await pool.query('SELECT AVG(risk_score) FROM telemetry_reports');
+        const topRisks = await pool.query(`
+            SELECT r.*, f.name as farm_name, u.name as user_name, b.name as barn_name, fl.name as floor_name
+            FROM telemetry_reports r 
+            JOIN farms f ON r.farm_id = f.id 
+            LEFT JOIN users u ON r.user_id = u.id 
+            LEFT JOIN barns b ON r.barn_id = b.id 
+            LEFT JOIN floors fl ON r.floor_id = fl.id
+            ORDER BY r.risk_score DESC LIMIT 10
+        `);
+
+        res.json({
+            totalFarms: parseInt(totalFarms.rows[0].count),
+            totalBarns: parseInt(totalBarns.rows[0].count),
+            totalUsers: parseInt(totalUsers.rows[0].count),
+            totalReports: parseInt(totalReports.rows[0].count),
+            avgRisk: parseFloat(avgRisk.rows[0].avg) || 0,
+            topRisks: topRisks.rows
+        });
+    } catch (err) {
+        console.error('Global stats error:', err);
+        res.status(500).json({ error: 'Gagal mengambil data global', detail: err.message });
+    }
 });
 
 // ============================================================
