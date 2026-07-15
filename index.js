@@ -23,6 +23,8 @@ dns.setDefaultResultOrder('ipv4first'); // Solusi IPv4 untuk Render + Supabase
 
 require('dotenv').config();
 const express = require('express');
+const app = express();
+   app.set('trust proxy', 1);   // Render = 1 hop proxy di depan app
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -30,7 +32,6 @@ const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-const app = express();
 const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'broileros-super-secret-key';
 
