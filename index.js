@@ -104,6 +104,10 @@ const loginLimiter = rateLimit({
 const enumerationLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 30,
+    keyGenerator: (req) => {
+     return req.headers['cf-connecting-ip'] || req.ip;
+    },
+    // ...opsi lain yang sudah ada, biarkan tetap
     message: { error: 'Terlalu banyak percobaan. Coba lagi dalam 15 menit.' }
 });
 
