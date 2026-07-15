@@ -24,7 +24,7 @@ dns.setDefaultResultOrder('ipv4first'); // Solusi IPv4 untuk Render + Supabase
 require('dotenv').config();
 const express = require('express');
 const app = express();
-   app.set('trust proxy', 1);   // Render = 1 hop proxy di depan app
+   app.set('trust proxy', 2);   // Render = 1 hop proxy di depan app
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
