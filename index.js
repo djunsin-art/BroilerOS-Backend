@@ -365,6 +365,9 @@ function requireClientAdmin(req, res, next) {
 // ============================================================
 // ROUTES: HEALTH / MISC
 // ============================================================
+
+const { createRiskRouter } = require('./risk-engine');
+app.use('/api', createRiskRouter({ pool, auth, requireSuperAdmin }));
 app.get('/', (req, res) => res.send('BroilerOS Backend is running!'));
 
 app.get('/api/health', (req, res) => {
